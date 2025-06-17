@@ -12,13 +12,21 @@ const firebaseConfig = {
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
 
-// Initialize Firebase
-const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+// Initialize Firebase only on client side
+let app;
+let auth;
+let db;
 
-// Initialize Firebase Authentication and get a reference to the service
-export const auth = getAuth(app);
+if (typeof window !== 'undefined') {
+  // Initialize Firebase
+  app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+  
+  // Initialize Firebase Authentication and get a reference to the service
+  auth = getAuth(app);
+  
+  // Initialize Cloud Firestore and get a reference to the service
+  db = getFirestore(app);
+}
 
-// Initialize Cloud Firestore and get a reference to the service
-export const db = getFirestore(app);
-
+export { auth, db };
 export default app;
