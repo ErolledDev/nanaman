@@ -11,6 +11,11 @@ interface Props {
 
 async function getRedirection(slug: string): Promise<RedirectData | null> {
   try {
+    if (!adminDb) {
+      console.error('Firebase Admin not initialized - cannot fetch redirection');
+      return null;
+    }
+    
     const doc = await adminDb.collection('redirections').doc(slug).get();
     if (!doc.exists) {
       return null;
@@ -24,6 +29,11 @@ async function getRedirection(slug: string): Promise<RedirectData | null> {
 
 async function incrementClick(slug: string) {
   try {
+    if (!adminDb) {
+      console.error('Firebase Admin not initialized - cannot increment click');
+      return;
+    }
+    
     const docRef = adminDb.collection('redirections').doc(slug);
     await docRef.update({
       clicks: adminDb.FieldValue.increment(1),
@@ -31,6 +41,28 @@ async function incrementClick(slug: string) {
     });
   } catch (error) {
     console.error('Error incrementing click:', error);
+  }
+}
+
+export async function generateStaticParams() {
+  try {
+    if (!adminDb) {
+      console.warn('Firebase Admin not initialized, returning empty static params');
+      console.warn('This will cause build errors with output: export. Please fix Firebase Admin configuration.');
+      return [];
+    }
+
+    const snapshot = await adminDb.collection('redirections').get();
+    const params = snapshot.docs.map((doc: any) => ({
+      slug: doc.id,
+    }));
+
+    console.log(`Generated ${params.length} static params for redirections`);
+    return params;
+  } catch (error) {
+    console.error('Error generating static params:', error);
+    console.warn('Returning empty params - this will cause build errors with output: export');
+    return [];
   }
 }
 

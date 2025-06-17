@@ -12,20 +12,29 @@ const firebaseConfig = {
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
 
-// Initialize Firebase only on client side
+// Initialize Firebase only on client side and only if config is valid
 let app;
 let auth;
 let db;
 
 if (typeof window !== 'undefined') {
-  // Initialize Firebase
-  app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
-  
-  // Initialize Firebase Authentication and get a reference to the service
-  auth = getAuth(app);
-  
-  // Initialize Cloud Firestore and get a reference to the service
-  db = getFirestore(app);
+  // Check if we have the required config values
+  const hasValidConfig = firebaseConfig.apiKey && 
+                        firebaseConfig.authDomain && 
+                        firebaseConfig.projectId;
+
+  if (hasValidConfig) {
+    // Initialize Firebase
+    app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+    
+    // Initialize Firebase Authentication and get a reference to the service
+    auth = getAuth(app);
+    
+    // Initialize Cloud Firestore and get a reference to the service
+    db = getFirestore(app);
+  } else {
+    console.warn('Firebase configuration is incomplete. Please check your environment variables.');
+  }
 }
 
 export { auth, db };

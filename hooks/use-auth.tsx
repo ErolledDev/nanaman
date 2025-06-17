@@ -23,6 +23,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Only set up auth listener if Firebase is properly initialized
+    if (!auth) {
+      setLoading(false);
+      return;
+    }
+
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user);
       setLoading(false);
@@ -32,10 +38,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const signIn = async (email: string, password: string) => {
+    if (!auth) {
+      throw new Error('Firebase authentication is not initialized');
+    }
     await signInWithEmailAndPassword(auth, email, password);
   };
 
   const logout = async () => {
+    if (!auth) {
+      throw new Error('Firebase authentication is not initialized');
+    }
     await signOut(auth);
   };
 
